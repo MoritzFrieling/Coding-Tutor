@@ -60,6 +60,15 @@ async function api(path, body) {
 function currentPrompt() { return state.settings.activePrompt === 'B' ? state.settings.promptB : state.settings.promptA; }
 function updateConfigLabels() {
   if (!state.settings) return;
+  const modelPicker = $('practice-model-select');
+  modelPicker.querySelector('[data-custom-model]')?.remove();
+  if (state.settings.model && !Array.from(modelPicker.options).some((option) => option.value === state.settings.model)) {
+    const custom = element('option', '', `Custom · ${state.settings.model}`);
+    custom.value = state.settings.model;
+    custom.dataset.customModel = 'true';
+    modelPicker.append(custom);
+  }
+  modelPicker.value = state.settings.model;
   const label = `Prompt ${state.settings.activePrompt} · ${state.settings.model}`;
   $('active-config-label').textContent = label;
   $('eval-prompt-name').textContent = `Prompt ${state.settings.activePrompt}`;
@@ -164,15 +173,20 @@ async function generatePractice() {
   if (state.isRunning) return;
   const userInput = $('request-input').value.trim();
   if (!userInput) return setMessage('practice-message', 'Write a request first.', true);
+  const model = state.settings.model;
   state.isRunning = true;
   $('generate-btn').disabled = true;
-  setMessage('practice-message', 'Generating your problem. This may take a moment…');
+  $('practice-model-select').disabled = true;
+  setMessage('practice-message', `Generating with ${model}. This may take a moment…`);
   try {
-    const result = await api('api/generate', { userInput, model: state.settings.model, systemPrompt: currentPrompt() });
+    const result = await api('api/generate', { userInput, model, systemPrompt: currentPrompt() });
     renderExercise(result.output, { model: result.model, metrics: result.metrics, gates: result.gates });
     setMessage('practice-message', 'Problem ready. The solution is closed until you reveal it.');
-  } catch (error) { setMessage('practice-message', error.message, true); }
-  finally { state.isRunning = false; $('generate-btn').disabled = false; }
+  } catch (error) {
+    const advice = /high demand|overloaded|try again later/i.test(error.message) ? ' Choose another model above and try again.' : '';
+    setMessage('practice-message', `${error.message}${advice}`, true);
+  }
+  finally { state.isRunning = false; $('generate-btn').disabled = false; $('practice-model-select').disabled = false; }
 }
 
 function renderTasks() {
@@ -314,6 +328,12 @@ function bindEvents() {
   window.addEventListener('hashchange', () => showView(location.hash.slice(1)));
   document.querySelectorAll('[data-suggestion]').forEach((button) => button.addEventListener('click', () => { $('request-input').value = button.dataset.suggestion; $('request-input').focus(); }));
   $('generate-btn').addEventListener('click', generatePractice);
+  $('practice-model-select').addEventListener('change', () => {
+    state.settings.model = $('practice-model-select').value;
+    $('model-input').value = state.settings.model;
+    persistSettings();
+    setMessage('practice-message', `Tutor model set to ${state.settings.model}.`);
+  });
   $('chat-send-btn').addEventListener('click', sendChat);
   $('chat-input').addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); sendChat(); } });
   $('demo-btn').addEventListener('click', () => renderExercise(demoExercise, { demo: true }));

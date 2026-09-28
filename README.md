@@ -25,7 +25,7 @@ The UI and sample problem are available before an API key is configured. Generat
 
 The default active system prompt is **Prompt A**, the short baseline requested for this exercise. **Prompt B** contains the detailed tutor instructions. Both are editable in Admin and can be switched without changing code. The server appends a separate, fixed output-format instruction to either version and requests JSON output matching the schema through Gemini's `generateContent` API. The schema lives in `lib/config.mjs`.
 
-The default tutor and judge model ID is `gemini-3.5-flash-lite`. Admin accepts other Gemini model IDs that your API key can access. You can change the server default with `GEMINI_MODEL` in `.env`. The API key always stays on the server. An evaluation with judging enabled makes 18 model requests: nine generations and nine judge calls.
+The default tutor and judge model ID is `gemini-3.5-flash-lite`. The Practice page has a model picker for quickly trying another Gemini model if one is busy. It stays in sync with the editable tutor model ID in Admin; the judge model is set separately in Admin. Model availability still depends on your Google API key and Google's current capacity. You can change the server default with `GEMINI_MODEL` in `.env`. The API key always stays on the server. An evaluation with judging enabled makes 18 model requests: nine generations and nine judge calls.
 
 ## Evaluation design
 
