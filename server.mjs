@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PROMPT_A, PROMPT_B, FORMAT_PROMPT, PROBLEM_SCHEMA, EVAL_TASKS, RUBRIC, JUDGE_SCHEMA, JUDGE_INSTRUCTIONS, CHAT_INSTRUCTIONS } from './lib/config.mjs';
 import { gradeDeterministically, summarizeGrades } from './lib/evaluation.mjs';
-import { requestStructured, requestText } from './lib/openai.mjs';
+import { requestStructured, requestText } from './lib/google.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 
@@ -25,7 +25,8 @@ const host = process.env.HOST || '127.0.0.1';
 const port = Number(process.env.PORT || 4173);
 const basePath = `/${String(process.env.BASE_PATH || '/').replace(/^\/+|\/+$/g, '')}/`.replace('//', '/');
 const accessToken = process.env.APP_ACCESS_TOKEN || '';
-const apiKey = process.env.OPENAI_API_KEY || '';
+const apiKey = process.env.GEMINI_API_KEY || '';
+const defaultModel = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 if (!['127.0.0.1', 'localhost', '::1'].includes(host) && !accessToken) {
   throw new Error('Set APP_ACCESS_TOKEN before listening on a non-local address.');
 }
@@ -69,9 +70,9 @@ function protectedRoute(req, res) {
 
 async function handleGenerate(req, res) {
   if (!protectedRoute(req, res)) return;
-  if (!apiKey) return json(res, 503, { error: 'Add OPENAI_API_KEY to .env and restart the server. The demo preview works without a key.' });
+  if (!apiKey) return json(res, 503, { error: 'Add GEMINI_API_KEY to .env and restart the server. The sample preview works without a key.' });
   const body = await readJson(req);
-  const model = body.model || 'gpt-6-sol';
+  const model = body.model || defaultModel;
   const systemPrompt = body.systemPrompt;
   const task = EVAL_TASKS.find((item) => item.id === body.taskId);
   const userInput = task ? task.input : body.userInput;
@@ -84,8 +85,7 @@ async function handleGenerate(req, res) {
     model,
     instructions: `${systemPrompt.trim()}\n\nOUTPUT FORMAT\n${FORMAT_PROMPT}`,
     input: userInput,
-    schema: PROBLEM_SCHEMA,
-    schemaName: 'coding_tutor_exercise'
+    schema: PROBLEM_SCHEMA
   });
   json(res, 200, {
     taskId: task?.id || null,
@@ -99,10 +99,10 @@ async function handleGenerate(req, res) {
 
 async function handleJudge(req, res) {
   if (!protectedRoute(req, res)) return;
-  if (!apiKey) return json(res, 503, { error: 'Add OPENAI_API_KEY to .env and restart the server.' });
+  if (!apiKey) return json(res, 503, { error: 'Add GEMINI_API_KEY to .env and restart the server.' });
   const body = await readJson(req);
   const task = EVAL_TASKS.find((item) => item.id === body.taskId);
-  const model = body.model || 'gpt-6-sol';
+  const model = body.model || defaultModel;
   if (!task) return json(res, 400, { error: 'Unknown evaluation task.' });
   if (!validModel(model)) return json(res, 400, { error: 'Enter a valid judge model ID.' });
   if (!body.output || typeof body.output !== 'object') return json(res, 400, { error: 'Missing generated output.' });
@@ -111,8 +111,7 @@ async function handleJudge(req, res) {
     model,
     instructions: JUDGE_INSTRUCTIONS,
     input: JSON.stringify({ userRequest: task.input, generatedOutput: body.output }),
-    schema: JUDGE_SCHEMA,
-    schemaName: 'coding_tutor_judgment'
+    schema: JUDGE_SCHEMA
   });
   const gates = gradeDeterministically(body.output, task);
   json(res, 200, {
@@ -127,9 +126,9 @@ async function handleJudge(req, res) {
 
 async function handleChat(req, res) {
   if (!protectedRoute(req, res)) return;
-  if (!apiKey) return json(res, 503, { error: 'Add OPENAI_API_KEY to .env and restart the server.' });
+  if (!apiKey) return json(res, 503, { error: 'Add GEMINI_API_KEY to .env and restart the server.' });
   const body = await readJson(req);
-  const model = body.model || 'gpt-6-sol';
+  const model = body.model || defaultModel;
   if (!validModel(model)) return json(res, 400, { error: 'Enter a valid model ID.' });
   if (!body.problem || typeof body.problem !== 'object') return json(res, 400, { error: 'Generate a problem first.' });
   if (typeof body.message !== 'string' || !body.message.trim() || body.message.length > 1500) return json(res, 400, { error: 'Write a question under 1,500 characters.' });
@@ -182,7 +181,7 @@ const server = http.createServer(async (req, res) => {
     const route = `/${pathname.slice(basePath.length)}`;
     if (req.method === 'GET' && route === '/health') return json(res, 200, { ok: true });
     if (req.method === 'GET' && route === '/api/config') {
-      return json(res, 200, { prompts: { A: PROMPT_A, B: PROMPT_B }, formatPrompt: FORMAT_PROMPT, tasks: EVAL_TASKS, rubric: RUBRIC, defaultModel: 'gpt-6-sol', keyConfigured: Boolean(apiKey), accessTokenRequired: Boolean(accessToken), basePath });
+      return json(res, 200, { prompts: { A: PROMPT_A, B: PROMPT_B }, formatPrompt: FORMAT_PROMPT, tasks: EVAL_TASKS, rubric: RUBRIC, defaultModel, keyConfigured: Boolean(apiKey), accessTokenRequired: Boolean(accessToken), basePath });
     }
     if (req.method === 'POST' && route === '/api/generate') return await handleGenerate(req, res);
     if (req.method === 'POST' && route === '/api/judge') return await handleJudge(req, res);

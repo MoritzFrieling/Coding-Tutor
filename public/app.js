@@ -258,7 +258,7 @@ function renderEvaluation() {
 
 async function runEvaluation() {
   if (state.isRunning) return;
-  if (!state.config.keyConfigured) return setMessage('eval-progress', 'Add OPENAI_API_KEY to .env and restart the server before running the suite.', true);
+  if (!state.config.keyConfigured) return setMessage('eval-progress', 'Add GEMINI_API_KEY to .env and restart the server before running the suite.', true);
   state.isRunning = true;
   $('run-eval-btn').disabled = true;
   const settings = { ...state.settings };
@@ -359,14 +359,14 @@ async function init() {
     state.config = await response.json();
   } catch (error) { $('connection-text').textContent = error.message; return; }
   $('connection-pill').classList.toggle('ready', state.config.keyConfigured);
-  $('connection-text').textContent = state.config.keyConfigured ? 'API ready' : 'API key needed';
+  $('connection-text').textContent = state.config.keyConfigured ? 'Google API ready' : 'Google API key needed';
   const saved = safeJson(localStorage.getItem(STORAGE_SETTINGS), {});
   state.settings = {
     activePrompt: saved.activePrompt === 'B' ? 'B' : 'A',
     promptA: typeof saved.promptA === 'string' ? saved.promptA : state.config.prompts.A,
     promptB: typeof saved.promptB === 'string' ? saved.promptB : state.config.prompts.B,
-    model: typeof saved.model === 'string' ? saved.model : state.config.defaultModel,
-    judgeModel: typeof saved.judgeModel === 'string' ? saved.judgeModel : state.config.defaultModel
+    model: typeof saved.model === 'string' && !saved.model.startsWith('gpt-') ? saved.model : state.config.defaultModel,
+    judgeModel: typeof saved.judgeModel === 'string' && !saved.judgeModel.startsWith('gpt-') ? saved.judgeModel : state.config.defaultModel
   };
   $('model-input').value = state.settings.model;
   $('judge-model-input').value = state.settings.judgeModel;
@@ -381,7 +381,7 @@ async function init() {
     if (session.exercise) { renderExercise(session.exercise, session.exerciseMeta || {}); $('code-editor').value = session.draft || session.exercise.problem?.starterCode || ''; updateLineNumbers(); state.chatHistory = session.chatHistory || []; renderChat(); persistSession(); }
     state.evaluation = session.evaluation || null; renderEvaluation();
   }
-  if (!state.config.keyConfigured) setMessage('practice-message', 'Add an OpenAI API key in .env to generate new problems. The sample preview is available now.');
+  if (!state.config.keyConfigured) setMessage('practice-message', 'Add GEMINI_API_KEY in the server’s .env file to generate new problems. The sample preview is available now.');
 }
 
 init();

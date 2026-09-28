@@ -1,17 +1,17 @@
 # Pattern Lab
 
-A small coding tutor and evaluation studio. The browser asks for a problem, the Node server calls the OpenAI Responses API, and a structured JSON response becomes three separate surfaces: the problem, a Python starter editor, and a solution pane that stays closed until requested. The learner can also ask follow-up questions about the current problem.
+A small coding tutor and evaluation studio. The browser asks for a problem, the Node server calls Google's Gemini API, and a structured JSON response becomes three separate surfaces: the problem, a Python starter editor, and a solution pane that stays closed until requested. The learner can also ask follow-up questions about the current problem.
 
 ## Run locally
 
 Requires Node.js 20 or newer. No package installation is needed.
 
 1. Copy `.env.example` to `.env`.
-2. Put an OpenAI API key in `OPENAI_API_KEY` in `.env`. Keep this file private; Git ignores it.
+2. Paste your Google AI Studio API key after `GEMINI_API_KEY=` in `.env`. Keep this file private; Git ignores it.
 3. Run `npm start` from this directory.
 4. Open `http://127.0.0.1:4173/`.
 
-The UI and sample problem are available before an API key is configured. Generation, chat, and AI judging require the key. A ChatGPT account and an API key are separate ways of accessing OpenAI models; the web app calls the API from its Node server.
+The UI and sample problem are available before an API key is configured. Generation, chat, and AI judging require the key. The browser calls this app's Node server; only the server sends the key to Google's API.
 
 ## What the app stores
 
@@ -23,9 +23,9 @@ The UI and sample problem are available before an API key is configured. Generat
 
 ## Prompt versions
 
-The default active system prompt is **Prompt A**, the short baseline requested for this exercise. **Prompt B** contains the detailed tutor instructions. Both are editable in Admin and can be switched without changing code. The server appends a separate, fixed output-format instruction to either version and requests a strict JSON schema through the Responses API. The schema lives in `lib/config.mjs`.
+The default active system prompt is **Prompt A**, the short baseline requested for this exercise. **Prompt B** contains the detailed tutor instructions. Both are editable in Admin and can be switched without changing code. The server appends a separate, fixed output-format instruction to either version and requests JSON output matching the schema through Gemini's `generateContent` API. The schema lives in `lib/config.mjs`.
 
-The default tutor and judge model ID is `gpt-6-sol`. Admin accepts any model ID that your API account can access. The API key always stays on the server.
+The default tutor and judge model ID is `gemini-3.5-flash-lite`. Admin accepts other Gemini model IDs that your API key can access. You can change the server default with `GEMINI_MODEL` in `.env`. The API key always stays on the server. An evaluation with judging enabled makes 18 model requests: nine generations and nine judge calls.
 
 ## Evaluation design
 
@@ -42,7 +42,7 @@ The six equal-weight rubric dimensions are completeness, internal consistency, u
 
 **Important limit:** the topic and difficulty checks verify the model's declared labels. Their substance, and the correctness of a freshly invented problem or solution, require semantic review. The AI judge flags likely mistakes but does not execute Python or prove correctness. Inspect suspicious outputs yourself. Add independently verified reference problems and tests later if you want a true executable correctness gate.
 
-The app uses its own simple harness instead of the legacy OpenAI Evals API. This keeps the exercise portable and the exported JSON easy to inspect.
+The app uses its own simple harness, keeping the exported JSON easy to inspect.
 
 ## Add to a private website later
 
@@ -57,7 +57,7 @@ This project does not modify or deploy to the existing website.
 - `server.mjs`: HTTP server and API routes.
 - `lib/config.mjs`: prompts, structured output schema, tasks, and rubric.
 - `lib/evaluation.mjs`: deterministic checks and score aggregation.
-- `lib/openai.mjs`: OpenAI Responses API calls.
+- `lib/google.mjs`: Gemini API requests and response parsing.
 - `public/`: browser interface.
 
-The Responses API request uses the [official Structured Outputs format](https://developers.openai.com/api/docs/guides/structured-outputs). Model IDs can be changed in Admin; see the [official model selection guide](https://developers.openai.com/api/docs/guides/model-selection) for current options.
+The request uses Google's [structured output format](https://ai.google.dev/gemini-api/docs/generate-content/structured-output). Model IDs can be changed in Admin; see [Google's model list](https://ai.google.dev/gemini-api/docs/models) for current options.
