@@ -1,3 +1,3 @@
 # Project writing preferences
 
-Write READMEs, code comments, and similar project documentation from my perspective as the project author. Use first person when natural, keep explanations concise, and only claim behaviour or results supported by the implementation.
+Write normal, concise project documentation in a neutral style. The project author is Moritz: use "I" only when a personal statement fits, rather than addressing the author as "you" or "the user". Do not force first person into feature descriptions, instructions, headings, or every paragraph. Keep claims grounded in the implementation.

@@ -1,39 +1,39 @@
 # Pattern Lab — Coding Tutor
 
-I built this small coding tutor to practise evaluating AI outputs. It generates LeetCode-style Python problems with examples, constraints, and starter code, then keeps the explanation and reference solution in a separate pane until I reveal them. I can ask follow-up questions and switch prompts or Gemini models.
+A small coding tutor built as a practical exercise in evaluating AI outputs. It generates LeetCode-style Python problems with examples, constraints, and starter code. The explanation and reference solution stay hidden in a separate pane until revealed. Follow-up chat, editable prompts, and model selection support experimenting with different tutor configurations.
 
-[Open my interactive preview](https://MoritzFrieling.github.io/Coding-Tutor/)
+[Open the interactive preview](https://moritzfrieling.github.io/Coding-Tutor/)
 
-GitHub Pages hosts my sample workspace and editable prompt controls. AI generation, tutoring chat, and evaluation require the Node server below; I keep my Gemini API key on that server.
+GitHub Pages hosts the sample workspace and prompt controls. AI generation, tutoring chat, and evaluation require the Node server below, where the Gemini API key is kept.
 
-## My evaluation approach
+## Evaluation approach
 
-I adapted the task, trial, grader, and harness structure from Anthropic's [Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents). My tutor currently produces a structured response in one generation rather than using tools in an autonomous agent loop. I evaluate the generated output, with UI behaviour outside the scoring scope.
+The evaluation design draws on Anthropic's [Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents), using tasks, repeated trials, graders, and a simple harness. The tutor currently generates a structured response in a single call; it does not use tools in an autonomous agent loop. Evaluation focuses on model outputs rather than UI behaviour.
 
-I compare **Prompt A**, a short baseline, with **Prompt B**, detailed tutor instructions. Both receive the same JSON format instruction. My suite contains three tasks: a medium sliding-window problem, an unspecified problem request, and a hard hash-map problem. I repeat each task three times: **nine generations per configuration**.
+Two system prompts can be compared: **Prompt A**, a short baseline, and **Prompt B**, detailed tutor instructions. Both receive the same JSON format instruction. The suite includes a medium sliding-window problem, an unspecified problem request, and a hard hash-map problem. Each task runs three times, producing **nine generations per configuration**.
 
-I separate required gates from quality scores:
+Required gates and quality scores are assessed separately:
 
 - **Deterministic gates:** required fields, requested difficulty and topic labels, and a separate solution field.
 - **Six equally weighted rubric scores:** problem completeness, internal consistency, useful examples, principle-first explanation, solution alignment, and transferable teaching. A separate judge call awards each dimension 0, 0.5, or 1 and explains its score.
-- **Success:** every gate passes and the average rubric score is **above 75%**. I assess each trial separately and inspect the suite results.
+- **Success:** every gate passes and the average rubric score is **above 75%**. Results are reported for each trial.
 
-I record generation duration and output length, along with prompts, model IDs, generated JSON, gates, and judge feedback. I can export the bundle for manual review. Enabling the judge makes nine additional requests, for 18 model calls per suite.
+Exported JSON bundles include generation duration, output length, prompts, model IDs, generated responses, gates, and judge feedback for manual review. Enabling the judge adds nine requests, for 18 model calls per suite.
 
-The gates check structure and declared labels; they do not prove the actual difficulty, pattern, solvability, or Python correctness. My judge's correctness assessment is advisory. I have not added code execution or independently verified correctness tests yet, and this small suite is a learning exercise rather than evidence of production reliability.
+The gates verify structure and declared labels, not actual difficulty, pattern use, solvability, or Python correctness. The judge's correctness assessment is advisory. Code execution and independently verified correctness tests are not implemented; this small suite is a learning exercise rather than evidence of production reliability.
 
 ## Run locally
 
-I use Node.js 20 or newer; no dependencies need installing.
+Requires Node.js 20 or newer. No dependencies need installing.
 
 1. Copy `.env.example` to `.env`.
 2. Set `GEMINI_API_KEY` to a Google AI Studio key.
 3. Run `npm start` and open [localhost:4173](http://127.0.0.1:4173/).
 
-I edit prompts and model IDs in **Admin**. Settings persist in localStorage; my latest exercise, draft, conversation, and evaluation stay in sessionStorage for the tab session. I export JSON to keep results beyond that session. There is no database, and `.env` stays out of Git.
+Prompts and model IDs are editable in **Admin**. Settings persist in localStorage; the latest exercise, draft, conversation, and evaluation remain in sessionStorage for the tab session. Export JSON to keep results beyond that session. There is no database, and `.env` is excluded from Git.
 
 ## Publish the preview
 
-I run `npm run build:pages` to copy the interface and public configuration into `docs/`, then commit and push to `main`. GitHub Pages publishes the `docs/` folder on that branch. The preview contains no API key and no backend.
+Run `npm run build:pages` to copy the interface and public configuration into `docs/`, then commit and push to `main`. GitHub Pages publishes that folder. The preview contains no API key and no backend.
 
-For a full deployment, I run `server.mjs` behind an HTTPS reverse proxy. I can set `BASE_PATH=/pattern-lab/` and preserve that prefix when forwarding requests. A non-local server address also requires `APP_ACCESS_TOKEN`.
+For a full deployment, run `server.mjs` behind an HTTPS reverse proxy. Set `BASE_PATH=/pattern-lab/` when hosting under that path and preserve the prefix when forwarding requests. A non-local server address also requires `APP_ACCESS_TOKEN`.
