@@ -1,0 +1,66 @@
+{
+  "prompts": {
+    "A": "Give me a leetcode-style problem and explain the solution.",
+    "B": "You are a coding-tutor. Your task is to:\n1. supply the user with a coding-problem in leet-code style, including the problem outline, examples, limitations and a coding base to start from.\n2. supply the user with a solution to the coding problem, hidden behind a \"drop-down toggle\" so the user doesn't accidentally see it.\n3. You receive a difficulty, usually easy, medium or hard, which should tell you about the user's difficulty preference, but even an easy problem is still a problem for a user who has coded before. Keep that in mind.\n4. You also optionally receive a topic/ pattern, such as linked list, tree or sliding window, or other, so you should take the topic into account when you think of a problem.\n5. You should build up the solution slowly, and principle first, so explain why it works the way it works."
+  },
+  "formatPrompt": "Return exactly one JSON object matching the supplied schema. The website displays problem fields in one pane and solution fields in another.\nSet language to python. Put a Python 3 function or class stub in problem.starterCode and the completed Python 3 implementation in solution.code.\nKeep the solution text and implementation inside the solution object. Use plain text in prose fields, without Markdown or HTML. The examples array contains objects with input, output, and explanation fields. The constraints array contains strings. The difficulty field must be easy, medium, or hard.",
+  "tasks": [
+    {
+      "id": "sliding-window-medium",
+      "label": "Sliding window · medium",
+      "input": "Hello! I want to get a problem about the sliding window pattern, and I am fairly new to leetcode so the problem should be medium difficulty.",
+      "expectedTopic": "sliding window",
+      "expectedDifficulty": "medium"
+    },
+    {
+      "id": "open-request",
+      "label": "Open request · no preference",
+      "input": "Give me a problem please.",
+      "expectedTopic": null,
+      "expectedDifficulty": null
+    },
+    {
+      "id": "hash-map-hard",
+      "label": "Hash maps · hard",
+      "input": "Please give me a hard problem on hashmaps.",
+      "expectedTopic": "hash map",
+      "expectedDifficulty": "hard"
+    }
+  ],
+  "rubric": [
+    {
+      "key": "completeness",
+      "label": "Complete problem",
+      "description": "Clear description, at least two examples, compatible constraints, and usable Python starter code."
+    },
+    {
+      "key": "consistency",
+      "label": "Internal consistency",
+      "description": "The statement, constraints, examples, input/output contract, and proposed solution agree."
+    },
+    {
+      "key": "examples",
+      "label": "Useful examples",
+      "description": "Examples are meaningfully different, cover a normal case and a useful boundary or contrasting case, and have correct outputs."
+    },
+    {
+      "key": "principle",
+      "label": "Principle first",
+      "description": "The solution starts with the key insight, then derives the algorithm step by step and explains why the topic fits."
+    },
+    {
+      "key": "alignment",
+      "label": "Solution alignment",
+      "description": "The explanation, walkthrough, complexity, and Python code agree; the code appears to solve the stated problem."
+    },
+    {
+      "key": "teaching",
+      "label": "Transferable teaching",
+      "description": "A learner can recognize the pattern in similar problems; the explanation bridges intuition and implementation without unexplained leaps."
+    }
+  ],
+  "defaultModel": "gemini-3.5-flash-lite",
+  "keyConfigured": false,
+  "accessTokenRequired": false,
+  "staticPreview": true
+}

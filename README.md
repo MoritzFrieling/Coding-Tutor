@@ -1,63 +1,39 @@
-# Pattern Lab
+# Pattern Lab — Coding Tutor
 
-A small coding tutor and evaluation studio. The browser asks for a problem, the Node server calls Google's Gemini API, and a structured JSON response becomes three separate surfaces: the problem, a Python starter editor, and a solution pane that stays closed until requested. The learner can also ask follow-up questions about the current problem.
+I built this small coding tutor to practise evaluating AI outputs. It generates LeetCode-style Python problems with examples, constraints, and starter code, then keeps the explanation and reference solution in a separate pane until I reveal them. I can ask follow-up questions and switch prompts or Gemini models.
+
+[Open my interactive preview](https://MoritzFrieling.github.io/Coding-Tutor/)
+
+GitHub Pages hosts my sample workspace and editable prompt controls. AI generation, tutoring chat, and evaluation require the Node server below; I keep my Gemini API key on that server.
+
+## My evaluation approach
+
+I adapted the task, trial, grader, and harness structure from Anthropic's [Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents). My tutor currently produces a structured response in one generation rather than using tools in an autonomous agent loop. I evaluate the generated output, with UI behaviour outside the scoring scope.
+
+I compare **Prompt A**, a short baseline, with **Prompt B**, detailed tutor instructions. Both receive the same JSON format instruction. My suite contains three tasks: a medium sliding-window problem, an unspecified problem request, and a hard hash-map problem. I repeat each task three times: **nine generations per configuration**.
+
+I separate required gates from quality scores:
+
+- **Deterministic gates:** required fields, requested difficulty and topic labels, and a separate solution field.
+- **Six equally weighted rubric scores:** problem completeness, internal consistency, useful examples, principle-first explanation, solution alignment, and transferable teaching. A separate judge call awards each dimension 0, 0.5, or 1 and explains its score.
+- **Success:** every gate passes and the average rubric score is **above 75%**. I assess each trial separately and inspect the suite results.
+
+I record generation duration and output length, along with prompts, model IDs, generated JSON, gates, and judge feedback. I can export the bundle for manual review. Enabling the judge makes nine additional requests, for 18 model calls per suite.
+
+The gates check structure and declared labels; they do not prove the actual difficulty, pattern, solvability, or Python correctness. My judge's correctness assessment is advisory. I have not added code execution or independently verified correctness tests yet, and this small suite is a learning exercise rather than evidence of production reliability.
 
 ## Run locally
 
-Requires Node.js 20 or newer. No package installation is needed.
+I use Node.js 20 or newer; no dependencies need installing.
 
 1. Copy `.env.example` to `.env`.
-2. Paste your Google AI Studio API key after `GEMINI_API_KEY=` in `.env`. Keep this file private; Git ignores it.
-3. Run `npm start` from this directory.
-4. Open `http://127.0.0.1:4173/`.
+2. Set `GEMINI_API_KEY` to a Google AI Studio key.
+3. Run `npm start` and open [localhost:4173](http://127.0.0.1:4173/).
 
-The UI and sample problem are available before an API key is configured. Generation, chat, and AI judging require the key. The browser calls this app's Node server; only the server sends the key to Google's API.
+I edit prompts and model IDs in **Admin**. Settings persist in localStorage; my latest exercise, draft, conversation, and evaluation stay in sessionStorage for the tab session. I export JSON to keep results beyond that session. There is no database, and `.env` stays out of Git.
 
-## What the app stores
+## Publish the preview
 
-- The two editable system prompts and model IDs are saved in browser `localStorage`.
-- The latest problem, code draft, tutor conversation, and latest evaluation bundle are kept in `sessionStorage`, which lasts for the tab session.
-- An optional app access token is held in `sessionStorage`.
-- There is no database. The server does not save generated outputs or conversations.
-- `Copy bundle` or `Download JSON` exports the complete latest evaluation for review elsewhere.
+I run `npm run build:pages` to copy the interface and public configuration into `docs/`, then commit and push to `main`. GitHub Pages publishes the `docs/` folder on that branch. The preview contains no API key and no backend.
 
-## Prompt versions
-
-The default active system prompt is **Prompt A**, the short baseline requested for this exercise. **Prompt B** contains the detailed tutor instructions. Both are editable in Admin and can be switched without changing code. The server appends a separate, fixed output-format instruction to either version and requests JSON output matching the schema through Gemini's `generateContent` API. The schema lives in `lib/config.mjs`.
-
-The default tutor and judge model ID is `gemini-3.5-flash-lite`. The Practice page has a model picker for quickly trying another Gemini model if one is busy. It stays in sync with the editable tutor model ID in Admin; the judge model is set separately in Admin. Model availability still depends on your Google API key and Google's current capacity. You can change the server default with `GEMINI_MODEL` in `.env`. The API key always stays on the server. An evaluation with judging enabled makes 18 model requests: nine generations and nine judge calls.
-
-## Evaluation design
-
-The fixed suite has three user requests: medium sliding window, an open request, and hard hash maps. Each task runs three times, giving nine generations for the selected prompt and model. If AI judging is enabled, each generation receives one additional judge call.
-
-Four deterministic checks are reported separately:
-
-1. Required schema fields and sections are present.
-2. The declared difficulty matches the request, when specified.
-3. The declared topic matches the request, when specified.
-4. The solution is returned in a separate field rather than copied into the visible problem.
-
-The six equal-weight rubric dimensions are completeness, internal consistency, useful examples, principle-first explanation, solution alignment, and transferable teaching. Each receives 0, 0.5, or 1 from an independent model judge. A run passes when every deterministic check passes and the mean rubric score is **above** 75%. The export includes all individual scores, reasons, generated JSON, timing, output length, model IDs, and the system prompt text used for the run.
-
-**Important limit:** the topic and difficulty checks verify the model's declared labels. Their substance, and the correctness of a freshly invented problem or solution, require semantic review. The AI judge flags likely mistakes but does not execute Python or prove correctness. Inspect suspicious outputs yourself. Add independently verified reference problems and tests later if you want a true executable correctness gate.
-
-The app uses its own simple harness, keeping the exported JSON easy to inspect.
-
-## Add to a private website later
-
-The Node app can run behind a reverse proxy on the same server as your private site. Set `BASE_PATH=/pattern-lab/` in `.env`, route that path to the Node process **without removing the path prefix**, and visit `https://your-host/pattern-lab/`. You can also serve it at the root of a separate subdomain with `BASE_PATH=/`.
-
-Keep `HOST=127.0.0.1` when a reverse proxy on the same machine connects to it. If the Node process must listen on a public interface, set a strong `APP_ACCESS_TOKEN`; the app refuses to start on a non-local address without one. The Admin screen has a field for this token. A public deployment should also sit behind the private site's normal authentication and HTTPS. Do not expose `.env` or the API key as a static file.
-
-This project does not modify or deploy to the existing website.
-
-## Files
-
-- `server.mjs`: HTTP server and API routes.
-- `lib/config.mjs`: prompts, structured output schema, tasks, and rubric.
-- `lib/evaluation.mjs`: deterministic checks and score aggregation.
-- `lib/google.mjs`: Gemini API requests and response parsing.
-- `public/`: browser interface.
-
-The request uses Google's [structured output format](https://ai.google.dev/gemini-api/docs/generate-content/structured-output). Model IDs can be changed in Admin; see [Google's model list](https://ai.google.dev/gemini-api/docs/models) for current options.
+For a full deployment, I run `server.mjs` behind an HTTPS reverse proxy. I can set `BASE_PATH=/pattern-lab/` and preserve that prefix when forwarding requests. A non-local server address also requires `APP_ACCESS_TOKEN`.

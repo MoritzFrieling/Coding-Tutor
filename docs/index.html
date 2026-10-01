@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151b2b">
+  <title>Pattern Lab · Coding tutor & eval studio</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" type="module"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#practice" aria-label="Pattern Lab home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span><strong>Pattern Lab</strong><small>Coding tutor · eval studio</small></span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-link active" data-view="practice" type="button">Practice</button>
+        <button class="nav-link" data-view="eval" type="button">Eval lab</button>
+        <button class="nav-link" data-view="admin" type="button">Admin</button>
+      </nav>
+      <div class="connection-pill" id="connection-pill"><span class="connection-dot"></span><span id="connection-text">Checking API</span></div>
+    </header>
+
+    <main>
+      <section id="practice-view" class="view active" aria-labelledby="practice-title">
+        <div class="hero">
+          <div>
+            <p class="eyebrow">01 / LEARN BY SOLVING</p>
+            <h1 id="practice-title">A problem for<br><em>the way you think.</em></h1>
+            <p class="hero-copy">Ask for a coding challenge. Work in Python. Reveal the reasoning when you’re ready.</p>
+          </div>
+          <div class="hero-art" aria-hidden="true"><span class="art-line art-line-1"></span><span class="art-line art-line-2"></span><span class="art-line art-line-3"></span><span class="art-cursor"></span><span class="art-caption">pattern recognition in progress</span></div>
+        </div>
+
+        <div class="composer card">
+          <div class="section-heading"><div><span class="step-badge">01</span><h2>Set your challenge</h2></div><span class="muted mono" id="active-config-label">Prompt A · gemini-3.5-flash-lite</span></div>
+          <label class="field-label" for="request-input">What would you like to practice?</label>
+          <textarea id="request-input" rows="3" placeholder="Give me a medium sliding window problem. I know Python but I am new to coding interviews."></textarea>
+          <div class="composer-bottom">
+            <div class="suggestions"><span>Try:</span><button type="button" data-suggestion="Give me a medium sliding window problem. I am fairly new to LeetCode.">Sliding window</button><button type="button" data-suggestion="Give me an easy problem about arrays.">Easy arrays</button><button type="button" data-suggestion="Please give me a hard problem on hash maps.">Hard hash maps</button></div>
+            <div class="composer-actions">
+              <label class="practice-model-label" for="practice-model-select">Model
+                <select id="practice-model-select" aria-label="Choose tutor model">
+                  <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite</option>
+                  <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option>
+                  <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+                  <option value="gemini-3.8-flash">Gemini 3.8 Flash</option>
+                </select>
+              </label>
+              <button id="generate-btn" class="button primary" type="button"><span>Generate problem</span><span aria-hidden="true">↗</span></button>
+            </div>
+          </div>
+          <p class="inline-message" id="practice-message" role="status"></p>
+        </div>
+
+        <div id="empty-state" class="empty-state">
+          <div class="empty-glyph" aria-hidden="true">{ }</div>
+          <div><strong>Your workspace is ready.</strong><p>Your next challenge will appear here, with the solution kept out of sight until you ask for it.</p></div>
+          <button id="demo-btn" class="text-button" type="button">Explore a sample problem →</button>
+        </div>
+
+        <section id="result-section" class="result-section hidden" aria-live="polite">
+          <div class="result-toolbar">
+            <div><p class="eyebrow">YOUR CHALLENGE</p><h2 id="result-title">Problem title</h2><div class="tags"><span class="tag" id="result-difficulty"></span><span class="tag" id="result-topic"></span><span class="tag subdued">Python 3</span></div></div>
+            <div class="toolbar-actions"><button id="copy-json-btn" class="button subtle" type="button">Copy JSON</button><button id="solution-toggle" class="button secondary" type="button" aria-expanded="false">Reveal solution <span aria-hidden="true">→</span></button></div>
+          </div>
+          <div id="workspace-grid" class="workspace-grid">
+            <div class="workspace-left">
+              <article class="problem-card card">
+                <div class="panel-kicker"><span class="panel-icon">01</span> THE PROBLEM</div>
+                <p id="problem-description" class="body-text"></p>
+                <h3>Examples</h3><div id="examples-list" class="examples-list"></div>
+                <h3>Constraints</h3><ul id="constraints-list" class="constraints-list"></ul>
+              </article>
+              <section class="editor-card" aria-labelledby="editor-title">
+                <div class="editor-header"><div><span class="file-dot"></span><strong id="editor-title">solution.py</strong><span class="editor-language">Python 3</span></div><div><button id="reset-code-btn" type="button">Reset</button><button id="copy-code-btn" type="button">Copy code</button></div></div>
+                <div class="editor-body"><div id="line-numbers" class="line-numbers" aria-hidden="true">1</div><textarea id="code-editor" spellcheck="false" aria-label="Python code editor"></textarea></div>
+                <div class="editor-footer"><span>Your draft stays in this browser tab.</span><span>No code execution yet</span></div>
+              </section>
+            </div>
+            <article id="solution-card" class="solution-card card hidden" aria-labelledby="solution-title">
+              <div class="panel-kicker"><span class="panel-icon solution-icon">02</span> WHEN YOU’RE READY</div>
+              <div class="solution-header"><h2 id="solution-title">The solution</h2><button id="hide-solution-btn" class="icon-button" type="button" aria-label="Hide solution">×</button></div>
+              <div class="solution-block"><span class="solution-index">01 / INTUITION</span><p id="solution-intuition" class="body-text"></p></div>
+              <div class="solution-block"><span class="solution-index">02 / APPROACH</span><p id="solution-approach" class="body-text"></p></div>
+              <div class="solution-block"><span class="solution-index">03 / WALKTHROUGH</span><p id="solution-walkthrough" class="body-text"></p></div>
+              <div class="solution-block"><span class="solution-index">04 / WHY IT WORKS</span><p id="solution-correctness" class="body-text"></p></div>
+              <div class="solution-block"><span class="solution-index">05 / COMPLEXITY</span><p id="solution-complexity" class="body-text"></p></div>
+              <div class="solution-block"><div class="code-heading"><span class="solution-index">REFERENCE CODE</span><button id="copy-solution-btn" type="button">Copy</button></div><pre><code id="solution-code"></code></pre></div>
+            </article>
+          </div>
+          <p id="result-meta" class="result-meta"></p>
+          <section class="tutor-chat card" aria-labelledby="tutor-chat-title"><div class="section-heading"><div><span class="step-badge">?</span><h2 id="tutor-chat-title">Ask the tutor</h2></div><span class="muted mono">HINTS & CLARIFICATIONS</span></div><p class="field-help">Ask about the problem or your code. Until you reveal the solution, the tutor gives hints without the full answer.</p><div id="chat-messages" class="chat-messages" aria-live="polite"></div><div class="chat-composer"><input id="chat-input" type="text" maxlength="1500" placeholder="Can I have a hint about where to start?" aria-label="Ask the coding tutor"><button id="chat-send-btn" class="button primary" type="button">Send ↗</button></div><p id="chat-message" class="inline-message" role="status"></p></section>
+        </section>
+      </section>
+
+      <section id="eval-view" class="view" aria-labelledby="eval-title">
+        <div class="page-heading"><p class="eyebrow">02 / EVALUATION STUDIO</p><h1 id="eval-title">Measure what<br><em>the tutor actually does.</em></h1><p>Three fixed requests, three trials each. Run the current prompt and model, then export every output for closer review.</p></div>
+        <div class="eval-grid">
+          <div class="card eval-setup"><div class="section-heading"><div><span class="step-badge">01</span><h2>Run configuration</h2></div></div>
+            <div class="config-row"><span>System prompt</span><strong id="eval-prompt-name">Prompt A</strong></div><div class="config-row"><span>Tutor model</span><strong id="eval-model-name">gemini-3.5-flash-lite</strong></div><div class="config-row"><span>Judge model</span><strong id="eval-judge-name">gemini-3.5-flash-lite</strong></div>
+            <div class="eval-count"><strong>3 <span>tasks</span></strong><span>×</span><strong>3 <span>trials</span></strong><span>=</span><strong>9 <span>outputs</span></strong></div>
+            <label class="check-row"><input id="judge-enabled" type="checkbox" checked><span><strong>Score with an AI judge</strong><small>Six rubric scores per output. This adds nine model calls.</small></span></label>
+            <button id="run-eval-btn" class="button primary wide" type="button">Run evaluation <span aria-hidden="true">↗</span></button>
+            <p id="eval-progress" class="inline-message" role="status">Each run uses the exact prompt and model selected in Admin.</p>
+          </div>
+          <div class="card eval-tasks"><div class="section-heading"><div><span class="step-badge">02</span><h2>Task suite</h2></div><span class="muted mono">FIXED INPUTS</span></div><div id="task-list"></div><p class="footnote">The open request has no topic or difficulty preference. Preference checks are skipped for that task.</p></div>
+        </div>
+        <section id="eval-results" class="eval-results hidden" aria-live="polite"><div class="result-toolbar"><div><p class="eyebrow">LATEST RUN</p><h2>Results & transcripts</h2></div><div class="toolbar-actions"><button id="copy-eval-btn" class="button subtle" type="button">Copy bundle</button><button id="download-eval-btn" class="button secondary" type="button">Download JSON</button></div></div><div id="eval-summary" class="summary-strip"></div><div id="run-list" class="run-list"></div></section>
+        <div class="eval-note"><strong>How to read this:</strong> Hard gates check the JSON shape, declared topic and difficulty, and separation of the solution. The six rubric scores assess quality. The judge’s correctness assessment is advisory because the generated problem has no independent test oracle.</div>
+      </section>
+
+      <section id="admin-view" class="view" aria-labelledby="admin-title">
+        <div class="page-heading"><p class="eyebrow">03 / WORKBENCH SETTINGS</p><h1 id="admin-title">Tune the instructions.<br><em>Keep the test fair.</em></h1><p>These settings are saved in this browser. An evaluation records the prompt text and model ID it used, so exported runs remain interpretable.</p></div>
+        <div class="admin-grid">
+          <div class="card settings-card"><div class="section-heading"><div><span class="step-badge">01</span><h2>Model & access</h2></div></div><label class="field-label" for="model-input">Tutor model</label><input id="model-input" type="text" list="model-options" autocomplete="off"><datalist id="model-options"><option value="gemini-3.5-flash-lite"></option><option value="gemini-3.1-flash-lite"></option><option value="gemini-3.5-flash"></option><option value="gemini-3.8-flash"></option><option value="gemini-3.1-pro-preview"></option></datalist><p class="field-help">Choose a listed Gemini model or type another model ID available to your Google API key. The Practice model picker uses this setting too.</p><label class="field-label" for="judge-model-input">Judge model</label><input id="judge-model-input" type="text" list="model-options" autocomplete="off"><label class="field-label" for="access-token-input">App access token <span class="optional">if configured</span></label><input id="access-token-input" type="password" autocomplete="off" placeholder="Used only for this browser tab"><p class="field-help">Paste your Google API key into <code>GEMINI_API_KEY</code> in the server’s <code>.env</code> file, then restart the server. The key is never sent to the browser.</p></div>
+          <div class="card settings-card"><div class="section-heading"><div><span class="step-badge">02</span><h2>Active prompt</h2></div></div><div class="prompt-switch" role="group" aria-label="Choose system prompt"><button id="prompt-a-switch" type="button" class="active">Prompt A · short</button><button id="prompt-b-switch" type="button">Prompt B · detailed</button></div><p class="field-help">Both prompts are editable below. The selected prompt is used for practice and eval runs.</p><div class="format-note"><strong>Separate format instructions</strong><p id="format-prompt-text"></p></div></div>
+          <div class="card settings-card prompt-card"><div class="section-heading"><div><span class="step-badge">A</span><h2>Prompt A</h2></div><span class="muted">Default</span></div><textarea id="prompt-a-input" rows="5"></textarea><p class="field-help">The minimal baseline. It receives only the separate JSON format contract.</p></div>
+          <div class="card settings-card prompt-card"><div class="section-heading"><div><span class="step-badge">B</span><h2>Prompt B</h2></div><span class="muted">Detailed</span></div><textarea id="prompt-b-input" rows="13"></textarea><p class="field-help">Your fuller tutor instructions, stored as an alternative.</p></div>
+        </div><div class="admin-actions"><button id="reset-settings-btn" class="button subtle" type="button">Restore default prompts</button><p id="settings-message" role="status"></p></div>
+      </section>
+    </main>
+    <footer><span>Pattern Lab <span class="footer-dot">●</span> built for practice and evaluation</span><span>Local-first prototype · Python editor · Structured outputs</span></footer>
+  </div>
+</body>
+</html>
